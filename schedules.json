@@ -1,0 +1,64 @@
+{
+  "routes": [
+    {
+      "id": "md-dc",
+      "name": "Bowie State ↔ Washington DC",
+      "type": "Express Shuttle",
+      "frequency": "Every 30 mins",
+      "next_departure": "07:30 AM",
+      "status": "On Time",
+      "delay_mins": 0,
+      "span_class": "md:col-span-2"
+    },
+    {
+      "id": "md-balt",
+      "name": "Bowie State ↔ Baltimore",
+      "type": "Intercity Link",
+      "frequency": "Every 45 mins",
+      "next_departure": "07:45 AM",
+      "status": "On Time",
+      "delay_mins": 0,
+      "span_class": "md:col-span-1"
+    },
+    {
+      "id": "md-ann",
+      "name": "Bowie State ↔ Annapolis",
+      "type": "Capital Shuttle",
+      "frequency": "Every 60 mins",
+      "next_departure": "08:00 AM",
+      "status": "Delayed (7m)",
+      "delay_mins": 7,
+      "span_class": "md:col-span-1"
+    },
+    {
+      "id": "md-cp",
+      "name": "Bowie State ↔ College Park / UMD",
+      "type": "Intra-Campus Connector",
+      "frequency": "Every 30 mins",
+      "next_departure": "07:15 AM",
+      "status": "On Time",
+      "delay_mins": 0,
+      "span_class": "md:col-span-2"
+    },
+    {
+      "id": "md-gb",
+      "name": "Bowie State ↔ Greenbelt Metro",
+      "type": "Metro Transit Link",
+      "frequency": "Every 15 mins",
+      "next_departure": "07:10 AM",
+      "status": "Delayed (27m)",
+      "delay_mins": 27,
+      "span_class": "md:col-span-1"
+    },
+    {
+      "id": "md-bwi",
+      "name": "Bowie State ↔ BWI Airport",
+      "type": "Airport Express",
+      "frequency": "Every 45 mins",
+      "next_departure": "08:15 AM",
+      "status": "Delayed (24m)",
+      "delay_mins": 24,
+      "span_class": "md:col-span-2"
+    }
+  ]
+}

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiom BSU Transit</title>
+    <!-- Tailwind CSS Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #020617 0%, #0f052d 50%, #030014 100%);
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        .glass-panel {
+            background: rgba(13, 10, 39, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(147, 51, 234, 0.15);
+        }
+        .nav-active {
+            background: linear-gradient(90deg, #7c3aed 0%, #a855f7 100%);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-purple-500 selection:text-white">
+
+    <!-- Sticky Navigation Bar -->
+    <nav class="sticky top-0 z-50 w-full glass-panel border-b border-purple-900/30 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+            <span class="text-2xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-200">AXIOM</span>
+            <span class="text-xs bg-purple-900/60 text-purple-300 font-bold px-2 py-0.5 rounded border border-purple-500/30">BSU</span>
+        </div>
+        
+        <div class="hidden md:flex bg-black/40 p-1 rounded-full border border-purple-950/50 space-x-1">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-active px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer">Home</button>
+            <button onclick="switchTab('about')" id="nav-about" class="text-gray-400 hover:text-white px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer">About</button>
+            <button onclick="switchTab('routes')" id="nav-routes" class="text-gray-400 hover:text-white px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer">Routes</button>
+            <button onclick="switchTab('pricing')" id="nav-pricing" class="text-gray-400 hover:text-white px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer">Pricing</button>
+            <button onclick="switchTab('contact')" id="nav-contact" class="text-gray-400 hover:text-white px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer">Contact</button>
+        </div>
+
+        <div>
+            <button onclick="switchTab('login')" id="nav-login" class="px-5 py-2 rounded-lg text-sm font-semibold tracking-wide border border-purple-500/50 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] hover:bg-purple-600/10 transition-all cursor-pointer">Log In</button>
+        </div>
+    </nav>
+
+    <!-- App Content Injection Node -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-6 md:p-12 transition-all duration-300" id="view-container">
+        <!-- Content gets rendered here by app dynamic state matrix -->
+    </main>
+
+    <!-- Footer Space -->
+    <footer class="w-full text-center py-6 text-xs text-gray-500 border-t border-purple-950/30 mt-auto">
+        &copy; 2026 Axiom Transport Technologies. Tailored for Prince George's County & BSU Bulldogs.
+    </footer>
+
+    <!-- Frontend Core Application Engine & Script Matrices -->
+    <script>
+        // State storage tracking
+        let activeTab = 'home';
+        let routeSchedules = [];
+
+        // In-memory fallbacks if app runs without server.js API node
+        const localFallbackSchedules = [
+            { id: "md-dc", name: "Bowie State ↔ Washington DC", type: "Express Shuttle", frequency: "Every 30 mins", next_departure: "07:30 AM", status: "On Time", delay_mins: 0, span_class: "md:col-span-2" },
+            { id: "md-balt", name: "Bowie State ↔ Baltimore", type: "Intercity Link", frequency: "Every 45 mins", next_departure: "07:45 AM", status: "On Time", delay_mins: 0, span_class: "md:col-span-1" },
+            { id: "md-ann", name: "Bowie State ↔ Annapolis", type: "Capital Shuttle", frequency: "Every 60 mins", next_departure: "08:00 AM", status: "Delayed (15m)", delay_mins: 15, span_class: "md:col-span-1" },
+            { id: "md-cp", name: "Bowie State ↔ College Park / UMD", type: "Intra-Campus Connector", frequency: "Every 30 mins", next_departure: "07:15 AM", status: "On Time", delay_mins: 0, span_class: "md:col-span-2" },
+            { id: "md-gb", name: "Bowie State ↔ Greenbelt Metro", type: "Metro Transit Link", frequency: "Every 15 mins", next_departure: "07:10 AM", status: "On Time", delay_mins: 0, span_class: "md:col-span-1" },
+            { id: "md-bwi", name: "Bowie State ↔ BWI Airport", type: "Airport Express", frequency: "Every 45 mins", next_departure: "08:15 AM", status: "On Time", delay_mins: 0, span_class: "md:col-span-2" }
+        ];
+
+        // Content Views Definitions
+        const views = {
+            home: `
+                <div class="text-center max-w-3xl mx-auto space-y-6 py-12 animate-fade-in">
+                    <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight leading-none">
+                        Getting around Maryland just got a <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-300">whole lot easier.</span>
+                    </h1>
+                    <p class="text-gray-400 text-lg md:text-xl font-normal max-w-2xl mx-auto">
+                        Premium regional shuttles configured for BSU commuters and DMV transit networks. Lock in student-friendly passes and track live routes in real time.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+                        <button onclick="switchTab('routes')" class="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold transition-all cursor-pointer shadow-lg shadow-purple-900/40">Explore Live Routes</button>
+                        <button onclick="switchTab('pricing')" class="px-8 py-3 rounded-full bg-purple-950/40 text-purple-200 border border-purple-500/20 hover:bg-purple-900/30 transition-all cursor-pointer">View Commuter Passes</button>
+                    </div>
+                    
+                    <!-- Analytics Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16">
+                        <div class="glass-panel p-6 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-purple-400 mb-1">15+</div>
+                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Active Maryland Routes</div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-purple-400 mb-1">5,000+</div>
+                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">BSU Students Served</div>
+                        </div>
+                        <div class="glass-panel p-6 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-purple-400 mb-1">4.8★</div>
+                            <div class="text-xs text-gray-400 font-medium uppercase tracking-wider">Commuter Satisfaction</div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            about: `
+                <div class="space-y-12 py-6 max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div class="space-y-4">
+                            <div class="text-xs font-bold text-purple-400 uppercase tracking-widest">Our Roots</div>
+                            <h2 class="text-4xl font-bold tracking-tight">Built for Prince George's County</h2>
+                            <p class="text-gray-400 leading-relaxed">
+                                Founded in 2019, Axiom Transit was constructed specifically to address the complex regional connectivity hurdles surrounding Bowie State University. We fill the gaps between campuses, central transit points, and regional airports.
+                            </p>
+                            <p class="text-gray-400 leading-relaxed">
+                                Our modern transit coordination grid handles secure vehicle rosters, elite local vetted operators, and tailored transit plans keeping safety and timelines balanced.
+                            </p>
+                        </div>
+                        <div class="glass-panel p-8 rounded-3xl space-y-6 border-purple-500/20">
+                            <h3 class="text-xl font-bold tracking-tight border-b border-purple-900/40 pb-3">Core Operating Standards</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="text-purple-300 font-semibold text-sm">Student-First Pricing</h4>
+                                    <p class="text-xs text-gray-400">Heavily subsidized commuter matrices configured explicitly around student balance books.</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-purple-300 font-semibold text-sm">Safe & Reliable</h4>
+                                    <p class="text-xs text-gray-400">Strict backgrounds check patterns and real-time live GPS route monitoring protocols.</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-purple-300 font-semibold text-sm">Maryland Roots</h4>
+                                    <p class="text-xs text-gray-400">Deep local mapping design knowing the layout rhythms of Prince George's and DMV areas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            routes: `
+                <div class="space-y-8 py-4">
+                    <div class="text-center max-w-xl mx-auto space-y-3">
+                        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight">Interactive Schedule Dashboard</h2>
+                        <p class="text-gray-400 text-sm">Monitor system delays, upcoming arrival patterns, and terminal information live.</p>
+                    </div>
+
+                    <!-- Live Keyword Search Component Box -->
+                    <div class="max-w-md mx-auto relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
+                            🔍
+                        </div>
+                        <input type="text" id="route-search-input" oninput="filterRouteGrid()" placeholder="Filter routes by keyword (e.g. DC, Airport, BWI)..." 
+                               class="w-full pl-10 pr-4 py-2.5 rounded-xl glass-panel border border-purple-900/40 focus:outline-none focus:border-purple-500 text-sm text-white placeholder-gray-500 transition-all">
+                    </div>
+
+                    <!-- Bento Interactive Dashboard Component -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="bento-schedule-grid">
+                        <!-- Populated by engine telemetry loops -->
+                    </div>
+                </div>
+            `,
+            pricing: `
+                <div class="space-y-12 py-6">
+                    <div class="text-center max-w-xl mx-auto space-y-2">
+                        <h2 class="text-3xl font-extrabold tracking-tight">Subsidized Student Tiers</h2>
+                        <p class="text-gray-400 text-sm">Select travel configurations matching your structural class layouts.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
+                        <!-- Tier 1 -->
+                        <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between relative border-purple-900/30">
+                            <div class="space-y-4">
+                                <span class="text-xs font-bold text-purple-400 tracking-wider uppercase bg-purple-950/60 px-2.5 py-1 rounded">Commuter Option</span>
+                                <h3 class="text-2xl font-bold pt-2">Commuter Pass</h3>
+                                <p class="text-gray-400 text-xs">For off-campus students driving or taking rail links into the hub.</p>
+                                <div class="text-4xl font-black text-white pt-2">$49<span class="text-xs text-gray-500 font-normal"> / month</span></div>
+                                <ul class="space-y-2.5 text-xs text-gray-400 pt-4">
+                                    <li>✓ Unlimited weekday shuttle access</li>
+                                    <li>✓ Requires valid commuter registration status</li>
+                                    <li>✓ Free terminal tracking telemetry access</li>
+                                </ul>
+                            </div>
+                            <button onclick="switchTab('contact')" class="w-full mt-8 py-2.5 rounded-xl border border-purple-500/40 hover:bg-purple-600/10 transition-all font-medium text-sm cursor-pointer">Activate Commuter Pass</button>
+                        </div>
+
+                        <!-- Tier 2 (Highlighted) -->
+                        <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between relative border-purple-500/50 shadow-[0_0_30px_rgba(147,51,234,0.15)] bg-gradient-to-b from-[#130b35]/60 to-[#070314]/80">
+                            <div class="absolute -top-3.5 right-6 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-black text-[10px] tracking-widest uppercase px-3 py-1 rounded-full shadow-lg">Most Popular</div>
+                            <div class="space-y-4">
+                                <span class="text-xs font-bold text-indigo-300 tracking-wider uppercase bg-indigo-950/60 px-2.5 py-1 rounded">Standard Tier</span>
+                                <h3 class="text-2xl font-bold pt-2">Campus Rider</h3>
+                                <p class="text-gray-400 text-xs">Configured for on-campus residents needing access to external metro networks.</p>
+                                <div class="text-4xl font-black text-white pt-2">$89<span class="text-xs text-gray-500 font-normal"> / month</span></div>
+                                <ul class="space-y-2.5 text-xs text-gray-300 pt-4">
+                                    <li>✓ 30 flexible premium rides per month</li>
+                                    <li>✓ Access to late night weekend DMV lines</li>
+                                    <li>✓ Guest rider single passes activation access</li>
+                                </ul>
+                            </div>
+                            <button onclick="switchTab('contact')" class="w-full mt-8 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm shadow-md cursor-pointer hover:from-purple-500 hover:to-indigo-500 transition-all">Select Campus Rider</button>
+                        </div>
+
+                        <!-- Tier 3 -->
+                        <div class="glass-panel p-8 rounded-2xl flex flex-col justify-between relative border-purple-900/30">
+                            <div class="space-y-4">
+                                <span class="text-xs font-bold text-gray-400 tracking-wider uppercase bg-gray-900/60 px-2.5 py-1 rounded">On-Demand</span>
+                                <h3 class="text-2xl font-bold pt-2">Pay-As-You-Go</h3>
+                                <p class="text-gray-400 text-xs">For students making occasional unexpected transit runs into town.</p>
+                                <div class="text-4xl font-black text-white pt-2">$8<span class="text-xs text-gray-500 font-normal"> / ride</span></div>
+                                <ul class="space-y-2.5 text-xs text-gray-400 pt-4">
+                                    <li>✓ Zero ongoing overhead commitments</li>
+                                    <li>✓ Tap-and-pay compatibility enabled</li>
+                                    <li>✓ Standard priority seat assignments</li>
+                                </ul>
+                            </div>
+                            <button onclick="switchTab('contact')" class="w-full mt-8 py-2.5 rounded-xl border border-purple-500/40 hover:bg-purple-600/10 transition-all font-medium text-sm cursor-pointer">Purchase Single Ride</button>
+                        </div>
+                    </div>
+                </div>
+            `,
+            contact: `
+                <div class="max-w-xl mx-auto glass-panel p-8 rounded-2xl border-purple-500/20 space-y-6">
+                    <div class="space-y-1">
+                        <h2 class="text-2xl font-bold">Contact Student Support</h2>
+                        <p class="text-xs text-gray-400">Operational Windows: Monday &ndash; Friday (7:00 AM &ndash; 10:00 PM EST)</p>
+                    </div>
+                    <form onsubmit="event.preventDefault(); alert('Message sent! Our DMV dispatcher group will reach out soon.');" class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">First Name</label>
+                                <input type="text" required class="w-full p-2.5 rounded-lg bg-black/40 border border-purple-900/40 text-sm focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">Email</label>
+                                <input type="email" value="rides@axiombsu.com" readonly class="w-full p-2.5 rounded-lg bg-purple-950/20 border border-purple-900/60 text-sm text-purple-300 font-mono outline-none">
+                            </div>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">Inquiry Channel Topic</label>
+                            <select class="w-full p-2.5 rounded-lg bg-black/60 border border-purple-900/40 text-sm focus:outline-none focus:border-purple-500 text-gray-300">
+                                <option>Commuter Pass Verification Discount Status</option>
+                                <option>Campus Rider Plan Activation Support</option>
+                                <option>Lost & Found Route Terminal Dispatch</option>
+                                <option>General Transit Routing Inquiry</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">Message Details</label>
+                            <textarea rows="4" required class="w-full p-2.5 rounded-lg bg-black/40 border border-purple-900/40 text-sm focus:outline-none focus:border-purple-500"></textarea>
+                        </div>
+                        <button type="submit" class="w-full py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm tracking-wide shadow-md hover:from-purple-500 hover:to-indigo-500 cursor-pointer transition-all">Dispatch Message</button>
+                    </form>
+                </div>
+            `,
+            login: `
+                <div class="max-w-sm mx-auto glass-panel p-8 rounded-2xl text-center space-y-6 border-purple-500/30 shadow-2xl">
+                    <div class="space-y-2">
+                        <div class="text-2xl font-black tracking-tight text-white">Welcome back, Bulldog.</div>
+                        <p class="text-xs text-gray-400">Access your digital transit passes and telemetry logs.</p>
+                    </div>
+                    <form onsubmit="event.preventDefault(); alert('Login simulated successfully!');" class="space-y-4 text-left">
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">BSU Student Email</label>
+                            <input type="email" required placeholder="username@bowiestate.edu" class="w-full p-2.5 rounded-lg bg-black/40 border border-purple-900/40 text-sm focus:outline-none focus:border-purple-500 placeholder-gray-600 font-mono text-white">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[11px] font-bold text-purple-300 uppercase tracking-wide">Password</label>
+                            <input type="password" required class="w-full p-2.5 rounded-lg bg-black/40 border border-purple-900/40 text-sm focus:outline-none focus:border-purple-500 text-white">
+                        </div>
+                        <button type="submit" class="w-full mt-2 py-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-sm tracking-wide shadow-lg cursor-pointer transition-all">Sign In to Dashboard</button>
+                    </form>
+                    <div class="text-xs text-gray-500 pt-2">
+                        Need an active pass container? <a href="#" onclick="switchTab('pricing')" class="text-purple-400 hover:underline">Select a tier</a>
+                    </div>
+                </div>
+            `
+        };
+
+        // Navigation Controller
+        function switchTab(tabId) {
+            activeTab = tabId;
+            const container = document.getElementById('view-container');
+            
+            // Inject views structures into app main loop
+            container.innerHTML = views[tabId];
+            
+            // Adjust nav button styling matrices
+            const navIds = ['home', 'about', 'routes', 'pricing', 'contact', 'login'];
+            navIds.forEach(id => {
+                const element = document.getElementById(`nav-${id}`);
+                if (element) {
+                    if (id === tabId) {
+                        element.className = (id === 'login') 
+                            ? "px-5 py-2 rounded-lg text-sm font-semibold tracking-wide border border-purple-400 bg-purple-600/20 text-white shadow-[0_0_20px_rgba(168,85,247,0.4)] cursor-pointer"
+                            : "nav-active px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all text-white cursor-pointer";
+                    } else {
+                        element.className = (id === 'login')
+                            ? "px-5 py-2 rounded-lg text-sm font-semibold tracking-wide border border-purple-500/50 text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] hover:bg-purple-600/10 transition-all cursor-pointer"
+                            : "text-gray-400 hover:text-white px-5 py-1.5 rounded-full text-sm font-medium tracking-wide transition-all cursor-pointer";
+                    }
+                }
+            });
+
+            // If navigating into the routes view panel, execute telemetry updates
+            if (tabId === 'routes') {
+                renderBentoGrid(routeSchedules.length ? routeSchedules : localFallbackSchedules);
+            }
+        }
+
+        // Live API Telemetry Synchronization Loops
+        async function syncSchedulesTelemetry() {
+            try {
+                // Poll local cloud endpoints configured via server.js node
+                const response = await fetch('/api/schedules');
+                if (response.ok) {
+                    const data = await response.json();
+                    routeSchedules = data.routes;
+                    
+                    // Live rewrite if active viewport is routes grid
+                    if (activeTab === 'routes') {
+                        // Maintain active filters while live polling updates
+                        filterRouteGrid();
+                    }
+                }
+            } catch (e) {
+                // Graceful background fallback if running over static python server or file protocol
+                if (routeSchedules.length === 0) {
+                    routeSchedules = localFallbackSchedules;
+                }
+            }
+        }
+
+        // Bento System Matrix Painter
+        function renderBentoGrid(data) {
+            const grid = document.getElementById('bento-schedule-grid');
+            if (!grid) return;
+
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center text-gray-500 py-12 text-sm">No active Maryland transit lines match your keyword criteria.</div>`;
+                return;
+            }
+
+            grid.innerHTML = data.map(route => {
+                const isDelayed = route.status.includes('Delayed');
+                const badgeColor = isDelayed 
+                    ? 'bg-rose-950/60 text-rose-400 border-rose-500/30' 
+                    : 'bg-emerald-950/60 text-emerald-400 border-emerald-500/30';
+                
+                return `
+                    <div class="glass-panel p-6 rounded-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group ${route.span_class || 'md:col-span-1'}">
+                        <div class="space-y-3">
+                            <div class="flex items-start justify-between">
+                                <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest bg-purple-950/40 px-2 py-0.5 rounded border border-purple-900/30">${route.type}</span>
+                                <span class="text-[10px] font-medium border px-2 py-0.5 rounded transition-all ${badgeColor}">
+                                    ● ${route.status}
+                                </span>
+                            </div>
+                            <h3 class="text-xl font-bold tracking-tight text-white group-hover:text-purple-300 transition-colors">${route.name}</h3>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 border-t border-purple-950/40 pt-4 mt-6 text-xs">
+                            <div>
+                                <div class="text-gray-500 font-medium">Frequency</div>
+                                <div class="text-gray-300 font-semibold mt-0.5">${route.frequency}</div>
+                            </div>
+                            <div>
+                                <div class="text-gray-500 font-medium">Next Departure</div>
+                                <div class="text-gray-300 font-mono font-bold mt-0.5">${route.next_departure}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Search Matrix filter logic
+        function filterRouteGrid() {
+            const query = document.getElementById('route-search-input').value.toLowerCase().trim();
+            const sourceDataset = routeSchedules.length ? routeSchedules : localFallbackSchedules;
+            
+            const filtered = sourceDataset.filter(route => 
+                route.name.toLowerCase().includes(query) || 
+                route.type.toLowerCase().includes(query) ||
+                route.status.toLowerCase().includes(query)
+            );
+            
+            renderBentoGrid(filtered);
+        }
+
+        // Runtime initializers
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('home');
+            syncSchedulesTelemetry();
+            
+            // Set dynamic system telemetry loop interval at 3 seconds
+            setInterval(syncSchedulesTelemetry, 3000);
+        });
+    </script>
+</body>
+</html>
